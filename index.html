@@ -1,30 +1,131 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>A-Frame Environment Map Example</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@loaders.gl/core@3.1.0/dist/min/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@loaders.gl/images@3.1.0/dist/min/index.min.js"></script>
-  </head>
-  <body>
-    <a-scene>
-      <!-- Assets -->
-      <a-assets>
-        <img id="envMap" src="./Day1.exr" crossorigin="anonymous">
-      </a-assets>
+<head>
+  <meta charset="utf-8">
+  <title>Red Carpet Exhibition with A-Frame</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene>
+    <!-- 背景环境图片 -->
+    <a-sky src="./Environments/1.jpg"></a-sky> <!-- 替换为你的环境图片路径 -->    
+    <!-- 红地毯 -->
+    <a-plane position="0 -31 -5" rotation="-90 0 0" color="#C41E3A" depth="100" height="20"></a-plane>
+    
+    <!-- 圆柱形展览台和悬浮产品 -->
+    <a-entity id="exhibition-booths" position="-2 -31 3" rotation="0 90 0"> <!-- 展台旋转90度 -->
+      <script type="text/javascript">
+        AFRAME.registerComponent('exhibition-booth', {
+          schema: {
+            frontSrc: {type: 'string', default: ''},
+            backSrc: {type: 'string', default: ''}
+          },
+          init: function () {
+            var data = this.data;
+            var el = this.el;
 
-      <!-- Sky element with the environment map -->
-      <a-sky src="#envMap" rotation="0 -90 0"></a-sky>
+            // 创建圆柱体展览台
+            var booth = document.createElement('a-cylinder');
+            booth.setAttribute('height', 1.2); // 高度
+            booth.setAttribute('radius', 1); // 半径
+            booth.setAttribute('position', '0 0 0'); // 调整位置使顶部与地面平齐
+            booth.setAttribute('material', {
+              shader: 'flat', // 使用平面着色器
+              src: '#cylinderTexture', // 引用纹理
+              repeat: '4.5 1.5', // 纹理重复次数，水平方向重复2次，垂直方向重复1次
+              metalness: 0.1, // 金属程度
+              roughness: 0, // 粗糙程度
+              opacity: 1, //透明程度            
+              normalMap: '#cylinderNormalMap', // 法线贴图 
+              color: '#C0C0C0' // 基本颜色               
+            });
+            el.appendChild(booth);
 
-      <!-- Camera -->
-      <a-camera position="0 1.8 0"></a-camera>
+            // 创建悬浮产品
+            var product = document.createElement('a-box');
+            product.setAttribute('depth', 0.005); // 缩小产品尺寸
+            product.setAttribute('height', 1.5);
+            product.setAttribute('width', 1.5);
+            product.setAttribute('position', '0 2 0'); // 悬浮在展览台上方
+            product.setAttribute('material', {color: '#4CC3D9', side: 'double'}); // 默认材质颜色
+            product.setAttribute('rotation', '0 0 0');
+            product.setAttribute('animation', {
+              property: 'rotation',
+              to: '0 360 0',
+              loop: true,
+              dur: 10000
+            });
 
-      <!-- Example objects in the scene -->
-      <a-box position="-1 0.5 -5" rotation="0 45 0" color="#4CC3D9" depth="1" height="1" width="1"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
-      <a-cylinder position="1 0.75 -5" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
-      <a-plane position="0 0 -4" rotation="-90 0 0" color="#7BC8A4" depth="4" height="4"></a-plane>
-    </a-scene>
-  </body>
+            // 前面贴图
+            var frontFace = document.createElement('a-plane');
+            frontFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
+            frontFace.setAttribute('material', {src: data.frontSrc});
+            frontFace.setAttribute('position', '0 0 0.005'); // 调整位置到产品前面
+            product.appendChild(frontFace);
+
+            // 后面贴图
+            var backFace = document.createElement('a-plane');
+            backFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
+            backFace.setAttribute('material', {src: data.backSrc});
+            backFace.setAttribute('position', '0 0 -0.005'); // 调整位置到产品后面
+            backFace.setAttribute('rotation', '0 180 0'); // 旋转贴图使其正确对齐
+            product.appendChild(backFace);
+
+            el.appendChild(product);
+          }
+        });
+
+        // 动态生成多个展览台
+        function generateExhibitionBooths() {
+          let i = 0;
+
+          function createBooth(i) {
+            const frontSrc = `./Map/${2 * i + 1}.png`; // 产品前表面贴图URL
+            const backSrc = `./Map/${2 * i + 2}.png`; // 产品后表面贴图URL
+
+            const imgFront = new Image();
+            const imgBack = new Image();
+
+            imgFront.src = frontSrc;
+            imgBack.src = backSrc;
+
+            let loadedCount = 0;
+
+            imgFront.onload = imgBack.onload = () => {
+              loadedCount++;
+              if (loadedCount === 2) { // 两个图片都加载成功
+                const booth = document.createElement('a-entity');
+                booth.setAttribute('position', `${i * 3} 0 0`);
+                booth.setAttribute('exhibition-booth', {
+                  frontSrc: frontSrc,
+                  backSrc: backSrc
+                });
+                document.querySelector('#exhibition-booths').appendChild(booth);
+                i++;
+                createBooth(i); // 递归生成下一个展台
+              }
+            };
+
+            imgFront.onerror = imgBack.onerror = () => {
+              console.log('No more images found.');
+            };
+          }
+
+          createBooth(i);
+        }
+
+        generateExhibitionBooths();
+      </script>
+    </a-entity>
+
+    <!-- 相机 -->
+    <a-camera position="0 -29 5"></a-camera>
+
+    <!-- 定义纹理资源 -->
+    <a-assets>
+      <img id="cylinderTexture" src="./Texture/1.jpg"> <!-- 替换为你的纹理图片路径 -->
+      <img id="cylinderNormalMap" src="./Texture/2.jpg"> <!-- 替换为你的法线贴图路径 -->
+    </a-assets>
+  </a-scene>
+</body>
 </html>
