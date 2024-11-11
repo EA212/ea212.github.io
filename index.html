@@ -8,7 +8,8 @@
 <body>
   <a-scene>
     <!-- 背景环境图片 -->
-    <a-sky src="./Environments/1.jpg"></a-sky> <!-- 替换为你的环境图片路径 -->    
+    <a-sky src="./Environments/1.jpg"></a-sky> <!-- 替换为你的环境图片路径 -->
+    
     <!-- 红地毯 -->
     <a-plane position="0 -31 -5" rotation="-90 0 0" color="#C41E3A" depth="100" height="20"></a-plane>
     
@@ -42,16 +43,8 @@
             el.appendChild(booth);
 
             // 创建悬浮产品
-            var product = document.createElement('a-box');
-            product.setAttribute('depth', 0.005); // 缩小产品尺寸
-            product.setAttribute('height', 1.5);
-            product.setAttribute('width', 1.5);
+            var product = document.createElement('a-entity');
             product.setAttribute('position', '0 2 0'); // 悬浮在展览台上方
-            product.setAttribute('material', {
-              color: '#4CC3D9', // 默认材质颜色
-              side: 'double',
-              opacity: 0, //透明程度
-            }); 
             product.setAttribute('rotation', '0 0 0');
             product.setAttribute('animation', {
               property: 'rotation',
@@ -62,18 +55,34 @@
 
             // 前面贴图
             var frontFace = document.createElement('a-plane');
-            frontFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
             frontFace.setAttribute('material', {src: data.frontSrc, transparent: true});
             frontFace.setAttribute('position', '0 0 0.005'); // 调整位置到产品前面
             product.appendChild(frontFace);
 
             // 后面贴图
             var backFace = document.createElement('a-plane');
-            backFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
             backFace.setAttribute('material', {src: data.backSrc, transparent: true});
             backFace.setAttribute('position', '0 0 -0.005'); // 调整位置到产品后面
             backFace.setAttribute('rotation', '0 180 0'); // 旋转贴图使其正确对齐
             product.appendChild(backFace);
+
+            // 调整贴图平面的大小
+            function adjustSize(plane, img) {
+              plane.setAttribute('geometry', {
+                primitive: 'plane',
+                width: img.width / 1000, // 调整宽度
+                height: img.height / 1000 // 调整高度
+              });
+            }
+
+            const imgFront = new Image();
+            const imgBack = new Image();
+
+            imgFront.src = data.frontSrc;
+            imgBack.src = data.backSrc;
+
+            imgFront.onload = () => adjustSize(frontFace, imgFront);
+            imgBack.onload = () => adjustSize(backFace, imgBack);
 
             el.appendChild(product);
           }
