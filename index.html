@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Red Carpet Exhibition with A-Frame</title>
+  <title>EA212`s ShowBox</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 </head>
 <body>
@@ -47,7 +47,11 @@
             product.setAttribute('height', 1.5);
             product.setAttribute('width', 1.5);
             product.setAttribute('position', '0 2 0'); // 悬浮在展览台上方
-            product.setAttribute('material', {color: '#4CC3D9', side: 'double'}); // 默认材质颜色
+            product.setAttribute('material', {
+              color: '#4CC3D9', // 默认材质颜色
+              side: 'double',
+              //opacity: 0.5, //透明程度
+            }); 
             product.setAttribute('rotation', '0 0 0');
             product.setAttribute('animation', {
               property: 'rotation',
