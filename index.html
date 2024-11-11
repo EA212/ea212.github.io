@@ -63,14 +63,14 @@
             // 前面贴图
             var frontFace = document.createElement('a-plane');
             frontFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
-            frontFace.setAttribute('material', {src: data.frontSrc});
+            frontFace.setAttribute('material', {src: data.frontSrc, transparent: true});
             frontFace.setAttribute('position', '0 0 0.005'); // 调整位置到产品前面
             product.appendChild(frontFace);
 
             // 后面贴图
             var backFace = document.createElement('a-plane');
             backFace.setAttribute('geometry', {primitive: 'plane', width: 1.5, height: 1.5}); // 调整贴图尺寸
-            backFace.setAttribute('material', {src: data.backSrc});
+            backFace.setAttribute('material', {src: data.backSrc, transparent: true});
             backFace.setAttribute('position', '0 0 -0.005'); // 调整位置到产品后面
             backFace.setAttribute('rotation', '0 180 0'); // 旋转贴图使其正确对齐
             product.appendChild(backFace);
